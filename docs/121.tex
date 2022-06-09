@@ -1,0 +1,49 @@
+\documentclass{article}
+\input{../../preamble.tex}
+\usepackage[letterpaper, portrait, margin=1in]{geometry}
+
+\graphicspath{./figures}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Sidharth Baskaran}
+\chead{Project Euler 121}
+\rhead{01/25/2022}
+
+\lstset{
+	basicstyle=\ttfamily,
+	frame=single,
+	breaklines=true
+}
+
+\begin{document}
+    
+\section{Problem Statement}
+
+A bag contains one red disc and one blue disc. In a game of chance a player takes a disc at random and its colour is noted. After each turn the disc is returned to the bag, an extra red disc is added, and another disc is taken at random.
+
+The player pays £1 to play and wins if they have taken more blue discs than red discs at the end of the game.
+
+If the game is played for four turns, the probability of a player winning is exactly 11/120, and so the maximum prize fund the banker should allocate for winning in this game would be £10 before they would expect to incur a loss. Note that any payout will be a whole number of pounds and also includes the original £1 paid to play the game, so in the example given the player actually wins £9.
+
+Find the maximum prize fund that should be allocated to a single game in which fifteen turns are played.
+
+\section{Code}
+
+\lstinputlisting[language=Python]{../code/121.py}
+
+\newpage
+\section{Explanation}
+
+First, note that we will only have 1 blue disc during each turn, so if we have a total of $k$ discs during a turn,
+the probability of finding a blue disc is $\frac{1}{k}$. We store the probabilities of getting a blue disc for each turn,
+i.e. from 2 discs up to $n$ in \verb|term_list|. 
+
+Also note that the problem states the player wins only if we take more blue discs than red at the end of each turn. In other words, we need to win at least one more then half the number of games to win ($\lfloor
+\frac{n}{2} \rfloor+1$). In this range, we can pick different combinations of blue discs in order to win, i.e. if we have 4 turns, we can pick either 3 or 4 blue discs to win the game, but there are ${4\choose 3}$ ways to pick 3 discs and 1 way to pick 4 discs.
+In general, there are ${n\choose k}$ ways to pick $k$ discs from $n$, where we consider $k$ in the range $[\lfloor\frac{n}{2} \rfloor+1,n]$.
+
+For each of these winning possibilities, we then calculate the getting $n-k$ red discs and $k$ blue discs, the product of which is the probability of winning in a certain combination.
+We then sum up the many ways of winning, and output $\lfloor \frac{1}{p}\rfloor$ as the prize fund, since this formula matches the example given.
+
+\end{document}

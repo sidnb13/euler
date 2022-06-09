@@ -1,0 +1,48 @@
+\documentclass{article}
+\input{../../preamble.tex}
+\usepackage[letterpaper, portrait, margin=1in]{geometry}
+
+\graphicspath{./figures}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Sidharth Baskaran}
+\chead{Project Euler 7}
+\rhead{01/08/2022}
+
+\lstset{
+	basicstyle=\ttfamily,
+	frame=single,
+	breaklines=true,
+	mathescape
+}
+
+\begin{document}
+    
+\section{Problem Statement}
+
+By listing the first six prime numbers: 2, 3, 5, 7, 11, and 13, we can see that the 6th prime is 13. What is the 10001st prime number?
+
+\section{Code}
+
+\lstinputlisting[language=Python]{../code/7.py}
+
+\section{Explanation}
+
+We include a method \verb|is_prime| to determine whether or not a number $n$ is prime.
+It simply checks whether all numbers below $\sqrt{n}$ excluding $1$ divide $n$. We only have to check from $\sqrt{n}$ and below because at least one factor of a nonprime number is below its square root.
+
+The method \verb|solve| finds the $n$th prime, with a default of $n=10001$. A prime variable, $p$, is set to 2
+and a counter variable is set to 1 (since 2 is prime). We then check whether the next odd $p$ is still prime, and move our counter up until it is equal to 10001.
+Only checking odd numbers after 2 saves time, since there are no even primes past 2.
+
+\begin{figure}[H]
+\centering
+\begin{BVerbatim*}
+104759
+396.011ms
+\end{BVerbatim*}
+\caption{Output}
+\end{figure}
+
+\end{document}

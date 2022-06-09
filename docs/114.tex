@@ -1,0 +1,145 @@
+\documentclass{article}
+\input{../../preamble.tex}
+\usepackage[letterpaper, portrait, margin=1in]{geometry}
+
+\graphicspath{./figures}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Sidharth Baskaran}
+\chead{Project Euler 114-117}
+\rhead{04/18/2022}
+
+\lstset{
+	basicstyle=\ttfamily\small,
+	breaklines=true,
+	numberstyle=\color{gray},
+    stringstyle=\color[HTML]{933797},
+    commentstyle=\color[HTML]{228B22},
+    emph={[2]from,import,pass,return}, emphstyle={[2]\color[HTML]{DD52F0}},
+    emph={[3]range}, emphstyle={[3]\color[HTML]{D17032}},
+    emph={[4]for,in,def}, emphstyle={[4]\color{blue}}
+}
+
+\begin{document}
+    
+\section{Problem Statement}
+
+Problems 114-117 are variations of the same idea.
+We are given a row with $n$ units and are asked to find how many ways
+in which we can fit smaller blocks of varying size inside.
+\begin{itemize}
+	\item Problem 114 allows us to place blocks of any size, with a minimum length of 3, where multiple blocks are separated by a blank unit.
+	\item Problem 115 defines a function $F(m,n)$ which returns the number of ways we can fit a block of size $m$ in $n$ units.
+	We want to find the smallest $n$ such that $F(50,n)\geq 1,000,000$.
+	\item Problem 116 defines block lengths of $m =2, 3, 4$, asking for $\sum_{i=1}^3F(m_i,50)$ (blocks cannot be mixed).
+	\item Problem 117 is an extension of 116 where we can mix blocks of sizes $m=2,3,4$.
+\end{itemize}
+
+\section{Code}
+
+The modified DP solutions are found \href{https://github.com/sidnb13/project-euler/blob/master/code/114-dp.py}{here}.
+
+\section{General Approach}
+
+It is actually easiest to start with an approach to Problem 114 and modify the solution for the other variations.
+Using the constraints of Problem 114, note that the minimum block size is 3.
+Let us define a function $f(n)$ such that $f(3)=1$; there is 1 way to fill a row
+of size 3:
+
+\begin{center}
+	\begin{tabular}{|c|c|c|}
+		\hline
+		\cellcolor{red}&\cellcolor{red}&\cellcolor{red}\\
+		\hline
+	\end{tabular}
+\end{center}
+
+Symmetry does not matter in different cases, so for $n=4$ we have three ways:
+
+\begin{center}
+	\begin{tabular}{ccc}
+		\begin{tabular}{|c|c|c|c|}
+			\hline
+			\cellcolor{red}&\cellcolor{red}&\cellcolor{red}&\\
+			\hline
+		\end{tabular}
+		&
+		\begin{tabular}{|c|c|c|c|}
+			\hline
+			\cellcolor{red}&\cellcolor{red}&\cellcolor{red}&\cellcolor{red}\\
+			\hline
+		\end{tabular}
+		&
+		\begin{tabular}{|c|c|c|c|}
+			\hline
+			&\cellcolor{red}&\cellcolor{red}&\cellcolor{red}\\
+			\hline
+		\end{tabular}
+	\end{tabular}
+\end{center}
+
+We can generalize this to $n$ units. However, when we have $n>4$
+there arises the case of the 1-unit separation between multiple blocks in a row.
+Take the case of $n=7$. With a \textit{left offset} of 0, we can introduce the possibility
+of filling the row with a block of size 6, and this option is unique to $n=7$. Namely, starting
+with a minimum block size of 3 and left offset of 0, we have $7-3+1=5$ ways of placing single blocks of valid size.
+
+The dynamic programming concept arises when we see that there are $n-k-1$ spaces left
+to place other blocks when we have placed a block of size $k$ with left offset of 0.
+In the case of $n=7$ once we place a block of say size 3, we can place another one of size 3 where
+there is a single space in between; there are $7-3-1=3$ spaces left to fill with other blocks considering
+the padding constraint. We know there is only one such way to fill 3 spaces, this is $f(3)$.
+
+\begin{center}
+	\begin{tabular}{|c|c|c|c|c|c|c|}
+		\hline
+		\cellcolor{red}&\cellcolor{red}&\cellcolor{red}&&\cellcolor{red}&\cellcolor{red}&\cellcolor{red}\\
+		\hline
+	\end{tabular}
+\end{center}
+
+Overall it is easy to see we are approaching $1 + f(a)$ where $a<n$, i.e. we place one block and then consider the subproblem
+already solved in a previous iteration. We must loop this $1+f(a)$ over the possible offsets and block size combinations given a certain $n$ too.
+Once we want to place another block, we have a new row size of $n-k-1$ to work with
+where $k$ is in the range of block sizes we can accomodate in $n$, or $[3,n]$. This is because for each block we place
+in a row of size $n$ we can place blocks of size $3,4,\ldots,n$. We must also consider the possible left offsets,
+which are in the range $[1, n-3]$ since we already include the case of the offset 0.
+Thus, our general formula becomes
+\begin{align*}
+	f_{114}(n)&=\underbrace{\sum_{k=3}^n (f(n-k-1)+1)}_{i=0} + \sum_{i=1}^{n-3}\left(\sum_{k=3}^{n-i} (f(n-k-i-1) + 1)\right)\\
+	&=\sum_{i=0}^{n-3}\left(\sum_{k=3}^{n-i} \left(f(n-k-i-1) + 1\right)\right)
+\end{align*}
+
+This general formula gives a solution to 114, which allows for any possible block size and combination. Pseudocode is expressed in Pythonic syntax below.
+\begin{lstlisting}
+def f(n):
+	dp = [0] * (n + 1) # our DP array
+	dp[3] = 1 # base case
+	for ni in range(4, n + 1):
+		dp[ni] = sum(
+			[ 
+				sum([dp[ni-k-i-1]+1 for i in range(0, ni-k + 1)])
+
+				for k in range(3, ni-i + 1) 
+			]
+		)
+	return dp[n]
+\end{lstlisting}
+115 defines an $f(m,n)$ where we desire only to fit a block of size $m$. It is easy to modify our prevous $f$:
+\begin{equation*}
+	f_{115}(m,n)=\sum_{i=0}^{n-m}\left(\sum_{k=m}^{n-i} \left(f(n-k-i-1) + 1\right)\right)
+\end{equation*}
+since we just change the minimum block size from 3 to $m$.
+We must implement a modified function $f(m,n)$ for Problem 116, which defines a singular
+block size $m$ used to calculate the possibilities. There is no 1-block padding as well.
+\begin{equation*}
+	f_{116}(m,n)=\sum_{i=0}^{n-m}\left((f(n-m-i) + 1\right)
+\end{equation*}
+
+Problem 117 is really a modification of 115 but without a 1-block padding.
+\begin{equation*}
+	f_{117}(n) = \sum_{i=0}^{n-2}\left(\sum_{k=2}^{4} \left(f(n-k-i) + 1\right)\right)
+\end{equation*}
+
+\end{document}

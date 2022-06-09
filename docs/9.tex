@@ -1,0 +1,65 @@
+\documentclass{article}
+\input{../../preamble.tex}
+\usepackage[letterpaper, portrait, margin=1in]{geometry}
+
+\graphicspath{./figures}
+
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{Sidharth Baskaran}
+\chead{Project Euler 9}
+\rhead{01/21/2022}
+
+\lstset{
+	basicstyle=\ttfamily,
+	frame=single,
+	breaklines=true
+}
+
+\begin{document}
+    
+\section{Problem Statement}
+
+A Pythagorean triplet is a set of three natural numbers, $a < b < c$, for which,
+$$a^2 + b^2 = c^2$$
+For example, $32 + 42 = 9 + 16 = 25 = 52$.
+
+There exists exactly one Pythagorean triplet for which $a + b + c = 1000$.
+Find the product $abc$.
+
+\section{Code}
+
+\lstinputlisting[language=Python]{../code/9.py}
+
+\section{Explanation}
+
+We have three variables and two equations--thus we need to iteratively solve for at least one of the variables.
+We begin by noticing that given $a<b<c$ and $a+b+c=k$ (where $k=1000$), the minimum value of $c$ is $\mathrm{ceil}(\frac{k}{3})$.
+We set $c$ as a free variable and thus require complexity of the order $O(n)$ to find it.
+
+Note that $a+b=k-c$ and $a^2+b^2=c^2$ allow us to use Lagrange multipliers to find the maximum value of $a^2+b^2$ under our constraint.
+Let $f(a,b)=a^2+b^2$ and $g(x,y)=a+b=k-c$.
+
+$$\nabla f(x,y)=\nabla g(x,y)\implies \langle 2a,2b\rangle = \lambda \langle 1, 1\rangle$$
+
+Thus, $a=b=\frac{\lambda}{2}$. Plugging this back into the constraint $g$, we get $\lambda=k-c$.
+Thus, the values of $a=b=\frac{k-c}{2}$ maximize $a^2+b^2$ under the constraint.
+
+We found a lower bound for $c$ at $\mathrm{ceil}(\frac{k}{3})$, but not an upper bound. $k$ itself would clearly not make a good bound,
+so let us attempt $\frac{k}{2}$. It helps to verify that this agrees with $\mathrm{max}(a^2+b^2)$ found earlier:
+
+$$\left(\frac{k-c}{2}\right)^2+\left(\frac{k-c}{2}\right)^2=\frac{(k-c)^2}{2}$$
+
+Plugging in our new upper bound, we get
+
+$$\frac{(k-\frac{k}{2})^2}{2}=\frac{k^2}{8}<c=\left(\frac{k}{2}\right)^2,$$
+
+so this upper bound can save time complexity. Now, we cannot find either $a$ or $b$
+explicitly, but finding one will allow us to find the other. Let us arbitrarily make $b$ a free variable, 
+thus increasing complexity to $O(n^2)$. We already have a lower bound of $\frac{k-c}{2}$, and we know the higher bound must be less than $\frac{k}{2}$.
+It is thus reasonable to keep the same upper bound for $b$ and $c$.
+
+After searching through possible values for $b$ and $c$, we can solve for $a$ using
+$a=k-(b+c)$ and check the three values using the Pythagorean constraint, returning an answer if satisfied.
+
+\end{document}
